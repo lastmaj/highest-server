@@ -1,6 +1,3 @@
-const axios = require('axios');
-const loginURL = 'https://users.premierleague.com/accounts/login/';
-const axiosInstace = axios.create({ baseURL: loginURL });
 const rp = require('request-promise');
 
 //implement array.flat()
@@ -15,13 +12,6 @@ Object.defineProperty(Array.prototype, 'flat', {
     }, []);
   },
 });
-
-//set cookie manually, then attach it to axios's headers
-const createSession = () => {
-  const cookie =
-    'eyJzIjogIld6SXNORFUwTVRNNU1qSmQ6MWtEbnFrOmtreVU4R2tfS1NKZU5hRy1JTmxPdUJUblhZRSIsICJ1IjogeyJpZCI6IDQ1NDEzOTIyLCAiZm4iOiAiQWhtZWQiLCAibG4iOiAiTWVqYnJpIiwgImZjIjogMX19';
-  axiosInstace.defaults.headers.Cookie = cookie;
-};
 
 //get the max standing from a standings page
 const getMaxFromPage = (results) => {
