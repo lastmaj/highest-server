@@ -80,6 +80,4 @@ const getMax = async (leagueId) => {
   return result;
 };
 
-getMax(61585);
-
 module.exports = getMax;
