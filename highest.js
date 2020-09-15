@@ -1,68 +1,69 @@
-const axios = require("axios");
-const loginURL = "https://users.premierleague.com/accounts/login/";
+const axios = require('axios');
+const loginURL = 'https://users.premierleague.com/accounts/login/';
 const axiosInstace = axios.create({ baseURL: loginURL });
+const rp = require('request-promise');
 
 //implement array.flat()
-Object.defineProperty(Array.prototype, "flat", {
-  value: function(depth = 1) {
-    return this.reduce(function(flat, toFlatten) {
+Object.defineProperty(Array.prototype, 'flat', {
+  value: function (depth = 1) {
+    return this.reduce(function (flat, toFlatten) {
       return flat.concat(
         Array.isArray(toFlatten) && depth > 1
           ? toFlatten.flat(depth - 1)
           : toFlatten
       );
     }, []);
-  }
+  },
 });
 
 //set cookie manually, then attach it to axios's headers
 const createSession = () => {
   const cookie =
-    "pl_profile=set your cookie manually here";
+    'eyJzIjogIld6SXNORFUwTVRNNU1qSmQ6MWtEbnFrOmtreVU4R2tfS1NKZU5hRy1JTmxPdUJUblhZRSIsICJ1IjogeyJpZCI6IDQ1NDEzOTIyLCAiZm4iOiAiQWhtZWQiLCAibG4iOiAiTWVqYnJpIiwgImZjIjogMX19';
   axiosInstace.defaults.headers.Cookie = cookie;
 };
 
 //get the max standing from a standings page
-const getMaxFromPage = results => {
+const getMaxFromPage = (results) => {
   const maxPoints = results.reduce((prev, curr) =>
     prev.event_total > curr.event_total ? prev : curr
-  )["event_total"];
-  return results.filter(r => r.event_total === maxPoints);
+  )['event_total'];
+  return results.filter((r) => r.event_total === maxPoints);
 };
 
 //post a request for standings then return the max on that page
-const getMax = async leagueId => {
-  createSession();
+const getMax = async (leagueId) => {
+  //createSession();
   //initialization
   let page = 1;
   let maxs = [];
   let start = new Date().getTime();
 
+  const options = {
+    url: `https://fantasy.premierleague.com/api/leagues-classic/${leagueId}/standings/?page_new_entries=1&page_standings=${page}&phase=1`,
+    json: true,
+  };
   //1st request is always made
-  firstRes = await axiosInstace.get(
-    `https://fantasy.premierleague.com/api/leagues-classic/${leagueId}/standings/?page_new_entries=1&page_standings=1&phase=1`
-  );
-  standings = await firstRes.data.standings;
-  results = await standings.results;
+  firstRes = await rp(options);
+
+  let results = firstRes.standings.results;
 
   //if there are results, carry on
   while (results.length !== 0) {
     console.log(`Reading page no: ${page}`);
-    let pageMax = getMaxFromPage(await results);
+    let pageMax = getMaxFromPage(results);
     maxs.push(pageMax);
 
     //make the next request
-    page++;
-    res = await axiosInstace.get(
-      `https://fantasy.premierleague.com/api/leagues-classic/${leagueId}/standings/?page_new_entries=1&page_standings=${page}&phase=1`
-    );
-    standings = await res.data.standings;
-    results = await standings.results;
+    options.url = `https://fantasy.premierleague.com/api/leagues-classic/${leagueId}/standings/?page_new_entries=1&page_standings=${++page}&phase=1`;
+    res = await rp(options);
+    standings = res.standings;
+    results = standings.results;
   }
 
   //helper array
   const winners = [];
-  const helperArray = maxs.map(x => x[0]["event_total"]);
+  const helperArray = maxs.map((x) => x[0]['event_total']);
   const globalMax = Math.max(...helperArray);
 
   //iterate through maxs and helperArray
@@ -75,18 +76,20 @@ const getMax = async leagueId => {
   //display time
   let end = new Date().getTime();
   let time = end - start;
-  console.log("Execution time: " + time / 1000 + "s");
-  const a = winners.flat().map(w => ({
+  console.log('Execution time: ' + time / 1000 + 's');
+  const a = winners.flat().map((w) => ({
     name: w.entry_name,
     points: w.event_total,
-    url: `https://fantasy.premierleague.com/entry/${w.entry}/history`
+    url: `https://fantasy.premierleague.com/entry/${w.entry}/history`,
   }));
   const result = {
     winners: a,
-    execution_time: time / 1000 + " s",
-    league_total_pages: page - 1
+    execution_time: time / 1000 + ' s',
+    league_total_pages: page - 1,
   };
   return result;
 };
+
+getMax(61585);
 
 module.exports = getMax;

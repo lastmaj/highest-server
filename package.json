@@ -1,0 +1,18 @@
+{
+  "name": "highest-server",
+  "version": "1.0.0",
+  "description": "This is the server-side logic running [on this website](https://highest-fpl.herokuapp.com/) to find the highest scoring player for just the current gameweek (for a certain league) in the Fantasy Premier League game. This tool is developed for a local fpl community in Tunisia.",
+  "main": "highest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "express": "^4.17.1",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6"
+  }
+}
